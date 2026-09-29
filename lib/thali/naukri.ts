@@ -62,7 +62,7 @@ type CandidateProfile = {
 /* -------------------------------- */
 
 const JOBS_PER_AVIORA_PAGE = 9;
-const MAX_NAUKRI_PAGES = 3;
+const MAX_NAUKRI_PAGES = 2;
 const FRESHNESS_DAYS = 7;
 
 /*
@@ -1229,10 +1229,9 @@ throwIfAborted();
           break;
         }
       } catch (error) {
-        console.error(
-          `[Thali/Naukri] Page ${naukriPage} failed:`,
-          error
-        );
+        console.warn(
+  `[Thali/Naukri] Page ${naukriPage} could not be loaded. Skipping this page and continuing with the remaining results.`
+);
       }
     }}
   } finally {
