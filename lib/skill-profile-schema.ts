@@ -18,6 +18,22 @@ export const SkillProfileSchema = z.object({
       aliases: z.array(z.string()),
     })
   ),
+
+  /*
+   * AI determines whether the candidate's
+   * PRIMARY skills contain meaningful technical/
+   * technology-oriented skills.
+   */
+  hasPrimaryTechnicalSkills: z.boolean(),
+
+  /*
+   * Only PRIMARY skills that the AI determines
+   * are genuinely technical / technology-oriented.
+   *
+   * These are used directly by Thali for Naukri
+   * search when hasPrimaryTechnicalSkills = true.
+   */
+  primaryTechnicalSkills: z.array(z.string()),
 });
 
 export type SkillProfile = z.infer<

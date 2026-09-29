@@ -24,6 +24,9 @@ type CandidateSkillProfile = {
   secondarySkills: string[];
   skillEvidence: CandidateSkillEvidence[];
   aliases: CandidateSkillAlias[];
+
+  hasPrimaryTechnicalSkills: boolean;
+  primaryTechnicalSkills: string[];
 };
 
 type CandidateProfile = {
@@ -259,115 +262,141 @@ const NaukriSearchQuerySchema = z.object({
 async function generateNaukriSearchQueries(
   profile: CandidateProfile
 ): Promise<string[]> {
+  const skillProfile =
+    profile.skillProfile;
+
+  /*
+   * ============================================================
+   * TECHNICAL / IT SEARCH MODE
+   * ============================================================
+   *
+   * OpenAI has already determined whether the candidate has
+   * PRIMARY technical skills.
+   *
+   * If yes, use those skills directly.
+   *
+   * We DO NOT generate job titles here.
+   */
+
+  if (
+    skillProfile?.hasPrimaryTechnicalSkills &&
+    skillProfile.primaryTechnicalSkills.length > 0
+  ) {
+    const primaryTechnicalSkills =
+      Array.from(
+        new Set(
+          skillProfile.primaryTechnicalSkills
+            .map((skill) => cleanText(skill))
+            .filter(Boolean)
+        )
+      );
+
+    console.log(
+      "[Thali] Primary technical skills detected by AI:",
+      primaryTechnicalSkills
+    );
+
+    console.log(
+      "[Thali] Using primary technical skills directly for Naukri search."
+    );
+
+    return primaryTechnicalSkills.slice(0, 5);
+  }
+
+  /*
+   * ============================================================
+   * GENERAL / NON-TECHNICAL SEARCH MODE
+   * ============================================================
+   *
+   * If OpenAI says the candidate does not have primary
+   * technical skills, retain the existing AI search-query
+   * generation behavior.
+   */
+
   const response = await openai.responses.parse({
     model: "gpt-5.6-luna",
 
     input: [
       {
         role: "system",
-
         content: `
 You are Aviora's Naukri search-query optimizer.
 
 Your job is to convert a candidate's documented professional
-skills and experience into short, practical search queries that
-work well on Naukri.
+skills and experience into short, practical search queries
+that work well on Naukri.
 
-IMPORTANT:
+The candidate has been classified by Aviora's skill analyzer
+as NOT having primary technical skills.
+
+Therefore, do not create software/technology searches unless
+they are explicitly supported by the candidate data.
 
 The candidate can belong to ANY profession.
-
-Do not assume software or technology careers.
 
 Search queries may be based on:
 
 - professional skills
-- technical skills
 - engineering skills
 - domain skills
 - tools
-- software
 - machinery
 - certifications
 - professional methods
-- job roles
 - documented experience
 - documented industry/domain experience
+- documented professional roles
 
 RULES:
 
-1. Use ONLY information supported by the candidate data.
+1. Use ONLY information supported by candidate data.
 
-2. Do NOT invent a job role, skill, qualification, certification,
+2. Do NOT invent a role, skill, qualification, certification,
    industry, or experience.
 
-3. Do not simply return the first skills in the profile.
+3. Create no more than 3 search queries.
 
-4. Determine which combinations are most useful for discovering
-   relevant jobs on Naukri.
+4. Queries must be concise.
 
-5. Queries should be concise.
+5. Prefer combinations of approximately 1-3 highly meaningful terms.
 
-6. Prefer combinations of approximately 1-3 highly meaningful
-   terms.
+6. Avoid generic personality traits.
 
-7. Avoid generic personality traits such as:
-   communication, teamwork, hardworking, punctual, motivated,
-   time management, etc., unless they are essential to a clearly
-   documented professional role.
+7. Do not create excessively long keyword strings.
 
-8. Do not create excessively long keyword strings.
+8. Do not use every candidate skill in every query.
 
-9. Do not use every candidate skill in every query.
+9. Create meaningfully different search angles.
 
-10. Create multiple search angles when useful.
+10. Do not create multiple queries that are merely minor variations
+    of the same search.
 
-For example, a candidate with documented:
+11. Do not invent a job title that is unsupported by the candidate's
+    documented background.
 
-Python
-Machine Learning
-Data Analysis
-Pandas
-NumPy
+12. Return only structured data matching the supplied schema.
 
-could produce queries such as:
+13. Do not return a match score.
 
-Python Machine Learning
-Python Data Analyst
-Machine Learning Python
-Data Analyst Python
+14. Do not evaluate job compatibility.
 
-Do NOT blindly copy this example.
-
-For a mechanical candidate, searches might instead use
-documented engineering tools, processes, and role-relevant skills.
-
-For a sales candidate, searches might use documented sales
-skills, CRM tools, and documented sales roles.
-
-For a finance candidate, searches might use documented
-accounting/finance systems and professional skills.
-
-The objective is NOT to rank the candidate.
-
-The objective is to produce search queries that are likely to
-retrieve relevant jobs from Naukri.
-
-Return only structured data.
-`.trim(),
+15. Do not invent information.
+        `.trim(),
       },
-
       {
         role: "user",
-
         content: JSON.stringify({
-          skillProfile: profile.skillProfile || null,
-
           originalSkills:
             profile.skills || [],
 
+          skillProfile:
+            profile.skillProfile || null,
+
           experience:
             profile.experience || [],
+
+          projects:
+            profile.projects || [],
         }),
       },
     ],
@@ -392,7 +421,7 @@ Return only structured data.
         .map((query) => cleanText(query))
         .filter(Boolean)
     )
-  );
+  ).slice(0, 3);
 }
 
 async function gotoNaukriWithRetry(
