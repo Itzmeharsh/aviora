@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+:root {
+  background: #0a0a0a;
+  color: white;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #0a0a0a;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.thali-loader {
+  animation: thali-spin 3s linear infinite;
+}
+
+@keyframes thali-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loadingShine {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(400%);
+  }
+}
