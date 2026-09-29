@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { zodTextFormat } from "openai/helpers/zod";
 import { openai } from "@/lib/openai";
-import puppeteer from "puppeteer-core";
+import puppeteer, { type Page } from "puppeteer-core";
 import chromium from "@sparticuz/chromium";
 import fs from "fs";
 
@@ -395,6 +395,49 @@ Return only structured data.
   );
 }
 
+async function gotoNaukriWithRetry(
+  page: Page,
+  url: string,
+  retries = 1
+) {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      console.log(
+        `[Thali/Naukri] Loading page (attempt ${
+          attempt + 1
+        }/${retries + 1})`
+      );
+
+      return await page.goto(url, {
+        waitUntil: "domcontentloaded",
+        timeout: 30000,
+      });
+    } catch (error) {
+      lastError = error;
+
+      console.error(
+        `[Thali/Naukri] Page load attempt ${
+          attempt + 1
+        } failed:`,
+        error
+      );
+
+      if (attempt < retries) {
+        console.log(
+          "[Thali/Naukri] Retrying page after temporary browser/network error..."
+        );
+
+        await new Promise((resolve) =>
+          setTimeout(resolve, 2000)
+        );
+      }
+    }
+  }
+
+  throw lastError;
+}
 
 function buildSearchUrl(
   query: string,
@@ -791,14 +834,11 @@ throwIfAborted();
   throwIfAborted();
 
   const response =
-    await page.goto(
-            searchUrl,
-            {
-              waitUntil:
-                "domcontentloaded",
-              timeout: 30000,
-            }
-          );
+  await gotoNaukriWithRetry(
+    page,
+    searchUrl,
+    1
+  );
 
         console.log(
           "[Thali/Naukri] Response status:",
