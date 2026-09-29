@@ -6,6 +6,15 @@ const nextConfig: NextConfig = {
     "puppeteer-core",
     "@sparticuz/chromium",
   ],
+
+  outputFileTracingIncludes: {
+    "/api/thali/jobs": [
+      "./node_modules/@sparticuz/chromium/bin/**/*",
+    ],
+    "/api/resume/pdf": [
+      "./node_modules/@sparticuz/chromium/bin/**/*",
+    ],
+  },
 };
 
 export default nextConfig;
