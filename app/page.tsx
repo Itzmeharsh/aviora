@@ -76,7 +76,7 @@ export default async function Home() {
 
             <Link
   href="/signin"
-  className="rounded-full bg-black px-5 py-2.5 text-sm ..."
+  className="rounded-full bg-black px-5 py-2.5 text-sm text-white ..."
 >
   Get started
 </Link>
@@ -135,7 +135,7 @@ export default async function Home() {
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
   href="/signin"
-  className="w-full rounded-full bg-black px-7 py-3.5 ..."
+  className="w-full rounded-full bg-black px-7 py-3.5 text-sm text-white ..."
 >
   Start with Aviora →
 </Link>
