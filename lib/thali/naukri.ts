@@ -513,7 +513,10 @@ export async function searchNaukriJobs(
     );
 
   const browser = await puppeteer.launch({
-  args: chromium.args,
+  args: [
+    ...chromium.args,
+    "--disable-http2",
+  ],
   defaultViewport: {
     width: 1440,
     height: 1000,
@@ -521,7 +524,6 @@ export async function searchNaukriJobs(
   executablePath: await chromium.executablePath(),
   headless: true,
 });
-
 const abortHandler = () => {
   console.log(
     "[Thali/Naukri] Search cancelled by user"
@@ -609,25 +611,54 @@ throwIfAborted();
       try {
   throwIfAborted();
 
-  const response =
-    await page.goto(
-            searchUrl,
-            {
-              waitUntil:
-                "domcontentloaded",
-              timeout: 15000,
-            }
-          );
+  let response = null;
+let navigationSucceeded = false;
 
-        console.log(
-          "[Thali/Naukri] Response status:",
-          response?.status()
-        );
-        throwIfAborted();
-        console.log(
-          "[Thali/Naukri] Response URL:",
-          response?.url()
-        );
+for (let attempt = 1; attempt <= 3; attempt++) {
+  try {
+    throwIfAborted();
+
+    console.log(
+      `[Thali/Naukri] Page ${naukriPage} navigation attempt ${attempt}/3`
+    );
+
+    response = await page.goto(searchUrl, {
+      waitUntil: "domcontentloaded",
+      timeout: 15000,
+    });
+
+    navigationSucceeded = true;
+    break;
+  } catch (error) {
+    console.error(
+      `[Thali/Naukri] Page ${naukriPage} navigation attempt ${attempt} failed:`,
+      error
+    );
+
+    if (attempt < 3) {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    }
+  }
+}
+
+if (!navigationSucceeded) {
+  console.error(
+    `[Thali/Naukri] Skipping page ${naukriPage} after 3 failed attempts`
+  );
+  continue;
+}
+
+console.log(
+  "[Thali/Naukri] Response status:",
+  response?.status()
+);
+
+throwIfAborted();
+
+console.log(
+  "[Thali/Naukri] Response URL:",
+  response?.url()
+);
 
         try {
           await page.waitForSelector(
