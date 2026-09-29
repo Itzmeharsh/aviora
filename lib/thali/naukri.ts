@@ -1,4 +1,5 @@
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 import type { ThaliJob } from "./types";
 import { analyzeJobMatch } from "./ai-match";
 
@@ -511,16 +512,15 @@ export async function searchNaukriJobs(
       appPage * JOBS_PER_AVIORA_PAGE
     );
 
-  const browser =
-  await puppeteer.launch({
-    headless: true,
-
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-    ],
-  });
+  const browser = await puppeteer.launch({
+  args: chromium.args,
+  defaultViewport: {
+    width: 1440,
+    height: 1000,
+  },
+  executablePath: await chromium.executablePath(),
+  headless: true,
+});
 
 const abortHandler = () => {
   console.log(

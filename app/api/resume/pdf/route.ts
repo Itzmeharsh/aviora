@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 import { generateResumeHTML } from "@/lib/resume-template";
 import { auth } from "@/auth";
 
@@ -49,13 +50,15 @@ export async function POST(request: Request) {
     // 4. Generate PDF with Puppeteer
     // --------------------------------------------------
 
-    browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-      ],
-    });
+   browser = await puppeteer.launch({
+  args: chromium.args,
+  defaultViewport: {
+    width: 1440,
+    height: 1000,
+  },
+  executablePath: await chromium.executablePath(),
+  headless: true,
+});
 
     const page = await browser.newPage();
 
