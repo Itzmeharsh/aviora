@@ -68,8 +68,18 @@ type CandidateProfile = {
     skills: string[];
   }[];
 
-  skillProfile?: CandidateSkillProfile | null;
+  education?: {
+  degree: string;
+  field: string;
+  institution: string;
+  location: string;
+  startYear: string;
+  endYear: string;
+  grade: string;
+}[];
 
+  skillProfile?: CandidateSkillProfile | null;
+  
   experience?: {
     company: string;
     role: string;
@@ -262,25 +272,20 @@ function calculateMatchScore(
   }
 
   /*
-   * --------------------------------
-   * 3. TECHNICAL MATCH
-   * --------------------------------
-   *
-   * Core       = 4
-   * Important  = 2
-   * Preferred  = 1
-   */
+   /* -------------------------------- */
+/* 3. REQUIREMENT MATCH */
+/* -------------------------------- */
 
   const CORE_WEIGHT = 4;
   const IMPORTANT_WEIGHT = 2;
   const PREFERRED_WEIGHT = 1;
 
-  const totalTechnicalWeight =
+  const totalRequirementWeight =
     core.length * CORE_WEIGHT +
     important.length * IMPORTANT_WEIGHT +
     preferred.length * PREFERRED_WEIGHT;
 
-  let matchedTechnicalWeight = 0;
+  let matchedRequirementWeight = 0;
 
   /*
    * CORE
@@ -296,7 +301,7 @@ function calculateMatchScore(
     );
 
     if (matched) {
-      matchedTechnicalWeight += CORE_WEIGHT;
+      matchedRequirementWeight += CORE_WEIGHT;
     }
   }
 
@@ -314,7 +319,7 @@ function calculateMatchScore(
     );
 
     if (matched) {
-      matchedTechnicalWeight +=
+      matchedRequirementWeight +=
         IMPORTANT_WEIGHT;
     }
   }
@@ -333,15 +338,15 @@ function calculateMatchScore(
     );
 
     if (matched) {
-      matchedTechnicalWeight +=
+      matchedRequirementWeight +=
         PREFERRED_WEIGHT;
     }
   }
 
-  const technicalMatch =
-    totalTechnicalWeight > 0
-      ? (matchedTechnicalWeight /
-          totalTechnicalWeight) *
+  const requirementMatch =
+    totalRequirementWeight > 0
+      ? (matchedRequirementWeight /
+          totalRequirementWeight) *
         100
       : 0;
 
@@ -369,8 +374,8 @@ function calculateMatchScore(
    */
 
   let finalScore =
-    technicalMatch * 0.8 +
-    experienceMatch * 0.2;
+  requirementMatch * 0.8 +
+  experienceMatch * 0.2;
 
   /*
    * --------------------------------
@@ -386,7 +391,7 @@ function calculateMatchScore(
    */
 
   if (
-    technicalMatch === 100 &&
+    requirementMatch === 100 &&
     experienceCompatible
   ) {
     if (totalRequirements === 1) {
@@ -470,17 +475,19 @@ candidate evidence.
 
 --------------------------------
 CANDIDATE SKILL PROFILE
---------------------------------
 
 PRIMARY SKILLS:
 
 These are the candidate's strongest documented
-technical skills.
+professional skills.
+
+They may be technical or non-technical depending
+on the candidate's profession.
 
 SECONDARY SKILLS:
 
-These are documented technical skills with weaker
-or less extensive evidence.
+These are documented professional skills with
+weaker or less extensive evidence.
 
 SKILL EVIDENCE:
 
@@ -520,20 +527,49 @@ JOB ANALYSIS
 
 Analyze the COMPLETE job title and description.
 
-Identify all meaningful technical requirements.
+Identify all meaningful job requirements relevant to performing the role.
 
-This includes:
+This is NOT limited to software or technology jobs.
+
+Depending on the profession, requirements may include:
+
+- technical skills
+- software and tools
+- engineering methods
+- machinery or equipment
+- design tools
+- domain knowledge
+- certifications
+- industry standards
+- business skills
+- analytical skills
+- communication skills
+- operational skills
+- functional responsibilities
+- professional qualifications
+- role-specific knowledge
+
+Examples of requirements include:
 
 - programming languages
 - frameworks
-- libraries
 - databases
-- cloud platforms
-- tools
-- platforms
-- APIs
+- engineering software
+- CAD/CAE tools
+- machinery and equipment
+- manufacturing processes
+- accounting systems
+- business tools
+- analytics tools
+- certifications
+- industry standards
+- domain knowledge
 - methodologies
-- technical responsibilities
+- functional responsibilities
+- role-specific skills
+
+The categories depend on the job.
+Do not assume the job is a software engineering role.
 
 Do not treat every technology mentioned casually
 in the description as a requirement.
@@ -582,9 +618,10 @@ describes them as:
 VERY IMPORTANT
 --------------------------------
 
-The three requirement arrays must contain
-ALL meaningful requirements identified from
-the job.
+The three requirement arrays must contain ALL meaningful
+job requirements identified from the job, regardless of
+whether they are technical, professional, educational,
+credential-related, or domain-specific.
 
 Do NOT put only matching requirements there.
 
@@ -771,6 +808,9 @@ Return only the structured result.
 
               originalSkills:
                 candidate.skills || [],
+
+              education:
+  candidate.education || [],
 
               experience:
                 candidateExperience,

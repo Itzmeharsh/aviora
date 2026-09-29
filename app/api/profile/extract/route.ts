@@ -66,12 +66,36 @@ IMPORTANT RULES:
 4. If a section does not exist, return an empty array.
 5. Preserve the candidate's actual information.
 6. Extract projects separately from work experience.
-7. Preserve technologies mentioned for each project.
-8. Preserve project names exactly as represented in the resume.
-9. Keep descriptions factual.
-10. Do not exaggerate the candidate's experience.
-11. Do not add skills that are not present in the resume.
-12. Do not invent URLs.
+7. Preserve technologies, professional skills, and tools mentioned
+   for each project or experience.
+
+8. "technologies" should contain technologies or technical systems
+   explicitly mentioned in the source.
+
+9. "skills" should contain professionally relevant abilities,
+   methods, processes, domain skills, or competencies explicitly
+   supported by the source.
+
+10. "tools" should contain explicitly mentioned software, equipment,
+    platforms, instruments, applications, or other professional tools.
+
+11. Do not assume that a professional skill is a technology.
+
+12. Do not assume that every tool is a skill.
+
+13. Do not invent skills, tools, technologies, or qualifications.
+
+14. Preserve project names exactly as represented in the resume.
+
+15. Keep descriptions factual.
+
+16. Do not exaggerate the candidate's experience.
+
+17. Do not add skills that are not present in the resume.
+
+18. Extract projects separately from work experience.
+
+19. Only use information explicitly present in the resume.
 
 IMPORTANT URL RULE:
 

@@ -1,6 +1,12 @@
+import { z } from "zod";
+import { zodTextFormat } from "openai/helpers/zod";
+import { openai } from "@/lib/openai";
 import puppeteer from "puppeteer-core";
 import chromium from "@sparticuz/chromium";
+import fs from "fs";
+
 import type { ThaliJob } from "./types";
+
 import { analyzeJobMatch } from "./ai-match";
 
 type CandidateSkillEvidence = {
@@ -34,6 +40,8 @@ type CandidateProfile = {
 
   projects?: {
     technologies?: string[];
+    skills?: string[];
+    tools?: string[];
   }[];
 
   experience?: {
@@ -44,6 +52,8 @@ type CandidateProfile = {
     endDate: string;
     description: string[];
     technologies: string[];
+    skills?: string[];
+    tools?: string[];
   }[];
 };
 
@@ -87,16 +97,31 @@ function getCandidateSkills(
   profile: CandidateProfile
 ): string[] {
   const skills = [
+    // AI-generated strongest professional skills first
+    ...(profile.skillProfile?.primarySkills || []),
+    ...(profile.skillProfile?.secondarySkills || []),
+
+    // Explicit resume skills
     ...(profile.skills?.flatMap(
       (group) => group.skills || []
     ) || []),
-    ...(profile.skillProfile?.primarySkills || []),
-    ...(profile.skillProfile?.secondarySkills || []),
+
+    // Experience
     ...(profile.experience?.flatMap(
-      (experience) => experience.technologies || []
+      (experience) => [
+        ...(experience.technologies || []),
+        ...(experience.skills || []),
+        ...(experience.tools || []),
+      ]
     ) || []),
+
+    // Projects
     ...(profile.projects?.flatMap(
-      (project) => project.technologies || []
+      (project) => [
+        ...(project.technologies || []),
+        ...(project.skills || []),
+        ...(project.tools || []),
+      ]
     ) || []),
   ];
 
@@ -108,7 +133,6 @@ function getCandidateSkills(
     )
   );
 }
-
 /* -------------------------------- */
 /* Calculate experience */
 /* -------------------------------- */
@@ -220,60 +244,157 @@ function calculateExperienceYears(
 /* Build search query FROM SKILLS */
 /* -------------------------------- */
 
-function buildSkillQuery(
-  profile: CandidateProfile
-): string {
-  const skills =
-    getCandidateSkills(profile);
-
-  /*
-   * These are only used to build the
-   * Naukri search query.
-   *
-   * AI still performs the actual
-   * candidate/job matching later.
-   */
-  const prioritySkills = [
-    "flutter",
-    "dart",
-    "react",
-    "next.js",
-    "nextjs",
-    "javascript",
-    "typescript",
-    "node.js",
-    "nodejs",
-    "python",
-    "java",
-    "postgresql",
-    "mongodb",
-    "firebase",
-    "supabase",
-  ];
-
-  const selected =
-    prioritySkills.filter((skill) =>
-      skills.some((candidateSkill) =>
-        candidateSkill
-          .toLowerCase()
-          .includes(skill.toLowerCase())
-      )
-    );
-
-  if (selected.length > 0) {
-    return selected
-      .slice(0, 4)
-      .join(", ");
-  }
-
-  return skills
-    .slice(0, 4)
-    .join(", ");
-}
-
 /* -------------------------------- */
 /* Naukri URL */
 /* -------------------------------- */
+
+/* -------------------------------- */
+/* AI Naukri Search Query Generator */
+/* -------------------------------- */
+
+const NaukriSearchQuerySchema = z.object({
+  queries: z.array(z.string()).min(1).max(5),
+});
+
+async function generateNaukriSearchQueries(
+  profile: CandidateProfile
+): Promise<string[]> {
+  const response = await openai.responses.parse({
+    model: "gpt-5.6-luna",
+
+    input: [
+      {
+        role: "system",
+
+        content: `
+You are Aviora's Naukri search-query optimizer.
+
+Your job is to convert a candidate's documented professional
+skills and experience into short, practical search queries that
+work well on Naukri.
+
+IMPORTANT:
+
+The candidate can belong to ANY profession.
+
+Do not assume software or technology careers.
+
+Search queries may be based on:
+
+- professional skills
+- technical skills
+- engineering skills
+- domain skills
+- tools
+- software
+- machinery
+- certifications
+- professional methods
+- job roles
+- documented experience
+- documented industry/domain experience
+
+RULES:
+
+1. Use ONLY information supported by the candidate data.
+
+2. Do NOT invent a job role, skill, qualification, certification,
+   industry, or experience.
+
+3. Do not simply return the first skills in the profile.
+
+4. Determine which combinations are most useful for discovering
+   relevant jobs on Naukri.
+
+5. Queries should be concise.
+
+6. Prefer combinations of approximately 1-3 highly meaningful
+   terms.
+
+7. Avoid generic personality traits such as:
+   communication, teamwork, hardworking, punctual, motivated,
+   time management, etc., unless they are essential to a clearly
+   documented professional role.
+
+8. Do not create excessively long keyword strings.
+
+9. Do not use every candidate skill in every query.
+
+10. Create multiple search angles when useful.
+
+For example, a candidate with documented:
+
+Python
+Machine Learning
+Data Analysis
+Pandas
+NumPy
+
+could produce queries such as:
+
+Python Machine Learning
+Python Data Analyst
+Machine Learning Python
+Data Analyst Python
+
+Do NOT blindly copy this example.
+
+For a mechanical candidate, searches might instead use
+documented engineering tools, processes, and role-relevant skills.
+
+For a sales candidate, searches might use documented sales
+skills, CRM tools, and documented sales roles.
+
+For a finance candidate, searches might use documented
+accounting/finance systems and professional skills.
+
+The objective is NOT to rank the candidate.
+
+The objective is to produce search queries that are likely to
+retrieve relevant jobs from Naukri.
+
+Return only structured data.
+`.trim(),
+      },
+
+      {
+        role: "user",
+
+        content: JSON.stringify({
+          skillProfile: profile.skillProfile || null,
+
+          originalSkills:
+            profile.skills || [],
+
+          experience:
+            profile.experience || [],
+        }),
+      },
+    ],
+
+    text: {
+      format: zodTextFormat(
+        NaukriSearchQuerySchema,
+        "naukri_search_queries"
+      ),
+    },
+  });
+
+  if (!response.output_parsed) {
+    throw new Error(
+      "AI Naukri search query generation returned no result"
+    );
+  }
+
+  return Array.from(
+    new Set(
+      response.output_parsed.queries
+        .map((query) => cleanText(query))
+        .filter(Boolean)
+    )
+  );
+}
+
 
 function buildSearchUrl(
   query: string,
@@ -410,46 +531,77 @@ function extractPostedAt(
 /* Extract skills from job */
 /* -------------------------------- */
 
-function extractSkills(
-  text: string
-): string[] {
-  const knownSkills = [
-    "javascript",
-    "typescript",
-    "react",
-    "react.js",
-    "next.js",
-    "nextjs",
-    "node.js",
-    "nodejs",
-    "express",
-    "flutter",
-    "dart",
-    "python",
-    "java",
-    "sql",
-    "postgresql",
-    "mongodb",
-    "firebase",
-    "supabase",
-    "tailwind",
-    "html",
-    "css",
-    "git",
-    "docker",
-    "aws",
-    "rest api",
+function extractSkills(text: string): string[] {
+  return [];
+}
+
+/* -------------------------------- */
+/* Chromium executable */
+/* -------------------------------- */
+/* -------------------------------- */
+/* Chromium executable */
+/* -------------------------------- */
+
+function getLocalChromePath(): string | null {
+  if (process.platform !== "win32") {
+    return null;
+  }
+
+  const candidates = [
+    process.env.PROGRAMFILES
+      ? `${process.env.PROGRAMFILES}\\Google\\Chrome\\Application\\chrome.exe`
+      : null,
+
+    process.env["PROGRAMFILES(X86)"]
+      ? `${process.env["PROGRAMFILES(X86)"]}\\Google\\Chrome\\Application\\chrome.exe`
+      : null,
+
+    process.env.LOCALAPPDATA
+      ? `${process.env.LOCALAPPDATA}\\Google\\Chrome\\Application\\chrome.exe`
+      : null,
+
+    process.env.LOCALAPPDATA
+      ? `${process.env.LOCALAPPDATA}\\Google\\Chrome SxS\\Application\\chrome.exe`
+      : null,
   ];
 
-  const lower =
-    text.toLowerCase();
-
-  return knownSkills.filter(
-    (skill) =>
-      lower.includes(
-        skill.toLowerCase()
-      )
+  const chromePath = candidates.find(
+    (path): path is string =>
+      typeof path === "string" &&
+      fs.existsSync(path)
   );
+
+  return chromePath ?? null;
+}
+
+async function getChromiumExecutablePath(): Promise<string> {
+  if (process.platform === "win32") {
+    const chromePath = getLocalChromePath();
+
+    if (!chromePath) {
+      throw new Error(
+        "Google Chrome was not found on this Windows machine. " +
+          "Install Google Chrome or set a local Chrome executable path."
+      );
+    }
+
+    console.log(
+      "[Thali/Browser] Using local Chrome:",
+      chromePath
+    );
+
+    return chromePath;
+  }
+
+  const chromiumPath =
+    await chromium.executablePath();
+
+  console.log(
+    "[Thali/Browser] Using server Chromium:",
+    chromiumPath
+  );
+
+  return chromiumPath;
 }
 
 /* -------------------------------- */
@@ -474,19 +626,18 @@ export async function searchNaukriJobs(
   };
 
   throwIfAborted();
-  const query =
-    buildSkillQuery(profile);
+  const searchQueries =
+  await generateNaukriSearchQueries(profile);
 
+console.log(
+  "[Thali] AI-generated Naukri search queries:",
+  searchQueries
+);
   const candidateYears =
     calculateExperienceYears(profile);
 
   const candidateSkills =
     getCandidateSkills(profile);
-
-  console.log(
-    "[Thali] Resume skill query:",
-    query
-  );
 
   console.log(
     "[Thali] Candidate experience:",
@@ -512,16 +663,22 @@ export async function searchNaukriJobs(
       appPage * JOBS_PER_AVIORA_PAGE
     );
 
-  const browser = await puppeteer.launch({
-  args: [
-    ...chromium.args,
-    "--disable-http2",
-  ],
+  const executablePath =
+  await getChromiumExecutablePath();
+
+const browser = await puppeteer.launch({
+  args:
+    process.platform === "win32"
+      ? []
+      : [...chromium.args],
+
   defaultViewport: {
     width: 1440,
     height: 1000,
   },
-  executablePath: await chromium.executablePath(),
+
+  executablePath,
+
   headless: true,
 });
 const abortHandler = () => {
@@ -584,11 +741,33 @@ throwIfAborted();
      * We build one large pool and then
      * paginate that pool inside Aviora.
      */
-    for (
-  let naukriPage = 1;
-  naukriPage <= MAX_NAUKRI_PAGES;
-  naukriPage++
-) {
+    for (const query of searchQueries) {
+  throwIfAborted();
+
+  if (jobs.size >= targetPoolSize) {
+    break;
+  }
+
+  console.log(
+    `[Thali/Naukri] Searching AI query: "${query}"`
+  );
+
+  hasNaukriNextPage = true;
+
+  for (
+    let naukriPage = 1;
+    naukriPage <= MAX_NAUKRI_PAGES;
+    naukriPage++
+  ) {
+    throwIfAborted();
+
+    if (jobs.size >= targetPoolSize) {
+      break;
+    }
+
+    if (!hasNaukriNextPage) {
+      break;
+    }
   throwIfAborted();
       if (
         jobs.size >=
@@ -611,54 +790,25 @@ throwIfAborted();
       try {
   throwIfAborted();
 
-  let response = null;
-let navigationSucceeded = false;
+  const response =
+    await page.goto(
+            searchUrl,
+            {
+              waitUntil:
+                "domcontentloaded",
+              timeout: 30000,
+            }
+          );
 
-for (let attempt = 1; attempt <= 3; attempt++) {
-  try {
-    throwIfAborted();
-
-    console.log(
-      `[Thali/Naukri] Page ${naukriPage} navigation attempt ${attempt}/3`
-    );
-
-    response = await page.goto(searchUrl, {
-      waitUntil: "domcontentloaded",
-      timeout: 15000,
-    });
-
-    navigationSucceeded = true;
-    break;
-  } catch (error) {
-    console.error(
-      `[Thali/Naukri] Page ${naukriPage} navigation attempt ${attempt} failed:`,
-      error
-    );
-
-    if (attempt < 3) {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-    }
-  }
-}
-
-if (!navigationSucceeded) {
-  console.error(
-    `[Thali/Naukri] Skipping page ${naukriPage} after 3 failed attempts`
-  );
-  continue;
-}
-
-console.log(
-  "[Thali/Naukri] Response status:",
-  response?.status()
-);
-
-throwIfAborted();
-
-console.log(
-  "[Thali/Naukri] Response URL:",
-  response?.url()
-);
+        console.log(
+          "[Thali/Naukri] Response status:",
+          response?.status()
+        );
+        throwIfAborted();
+        console.log(
+          "[Thali/Naukri] Response URL:",
+          response?.url()
+        );
 
         try {
           await page.waitForSelector(
@@ -917,11 +1067,15 @@ console.log(
               );
 
             /*
-             * Searchable text is used only
-             * for extracting recognizable
-             * technologies to give the AI
-             * additional structured context.
-             */
+ * Searchable text is retained as raw
+ * structured context.
+ *
+ * Job requirements are analyzed by AI
+ * from the complete job description.
+ *
+ * No hardcoded profession-specific
+ * skill dictionary is used here.
+ */
             const searchableText =
               cleanText(
                 [
@@ -1040,7 +1194,7 @@ console.log(
           error
         );
       }
-    }
+    }}
   } finally {
   signal?.removeEventListener(
     "abort",

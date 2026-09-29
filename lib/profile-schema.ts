@@ -41,6 +41,8 @@ export const CandidateProfileSchema = z.object({
       endDate: z.string(),
       description: z.array(z.string()),
       technologies: z.array(z.string()),
+      skills: z.array(z.string()),
+      tools: z.array(z.string()),
     })
   ),
 
@@ -49,6 +51,8 @@ export const CandidateProfileSchema = z.object({
       name: z.string(),
       description: z.string(),
       technologies: z.array(z.string()),
+      skills: z.array(z.string()),
+      tools: z.array(z.string()),
       url: z.string(),
       highlights: z.array(z.string()),
     })
