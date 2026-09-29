@@ -82,7 +82,7 @@ export default function OnboardingResumeUpload() {
       // PROFILE CREATED
       // --------------------------------
 
-      router.push("/");
+      router.push("/tailor");
       router.refresh();
     } catch (error) {
       console.error(

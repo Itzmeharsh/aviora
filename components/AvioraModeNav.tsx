@@ -21,7 +21,7 @@ export default function AvioraModeNav() {
   function switchMode(toThali: boolean) {
     if (toThali === isThali) return;
 
-    router.push(toThali ? "/thali" : "/");
+    router.push(toThali ? "/thali" : "/tailor");
   }
 
   return (
@@ -152,7 +152,7 @@ export default function AvioraModeNav() {
               type="button"
               onClick={() =>
                 signOut({
-                  callbackUrl: "/signin",
+                  callbackUrl: "/",
                 })
               }
               className="w-full rounded-xl px-3 py-2.5 text-left text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300"

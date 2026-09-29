@@ -31,7 +31,7 @@ export default async function OnboardingPage() {
   // --------------------------------
 
   if (existingProfile) {
-    redirect("/");
+    redirect("/tailor");
   }
 
   // --------------------------------

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import AvioraModeNav from "@/components/AvioraModeNav";
+import AvioraNavbar from "@/components/AvioraNavbar";
 
 type Job = {
   id: string;
@@ -307,26 +307,9 @@ export default function ThaliPage() {
         {/* -------------------------------- */}
         {/* Header */}
         {/* -------------------------------- */}
-
-        <nav className="fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-
-            {/* Aviora Logo */}
-            <Link
-              href="/"
-              className="text-xl font-semibold tracking-tight text-white"
-            >
-              Aviora
-              <span className="text-amber-400">
-                .
-              </span>
-            </Link>
-
-            {/* Tailor / Thali / Account */}
-            <AvioraModeNav />
-
-          </div>
-        </nav>
+        
+        {/* Navbar */}
+        <AvioraNavbar />
 
         {/* -------------------------------- */}
         {/* Loading */}

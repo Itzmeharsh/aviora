@@ -1,8 +1,13 @@
 "use client";
-import { useState } from "react";
-import AvioraModeNav from "@/components/AvioraModeNav";
+import { useEffect, useState } from "react";
+import AvioraNavbar from "@/components/AvioraNavbar";
+import Image from "next/image";
 import Link from "next/link";
-export default function Home() {
+export default function Home({
+  initialProfile,
+}: {
+  initialProfile: any;
+}) {
   // -----------------------------
   // State
   // -----------------------------
@@ -19,7 +24,8 @@ export default function Home() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
 
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] =
+  useState<any>(initialProfile);
 
   const [job, setJob] = useState<any>(null);
   const [analyzingJob, setAnalyzingJob] = useState(false);
@@ -34,9 +40,20 @@ export default function Home() {
 
 const [generatingResume, setGeneratingResume] =
   useState(false);
-
+const [generatingCandidateProfileResume, setGeneratingCandidateProfileResume] =
+  useState(false);
 const [resumeGenerationError, setResumeGenerationError] =
   useState("");
+const [applications, setApplications] = useState<any[]>([]);
+const [applicationsLoading, setApplicationsLoading] = useState(true);
+const [applicationsError, setApplicationsError] = useState("");
+const [showAllApplications, setShowAllApplications] =
+  useState(false);
+const [applicationToDelete, setApplicationToDelete] =
+  useState<any | null>(null);
+
+const [deletingApplication, setDeletingApplication] =
+  useState(false);
   // -----------------------------
   // Resume Upload
   // -----------------------------
@@ -296,6 +313,7 @@ const [resumeGenerationError, setResumeGenerationError] =
   // UI
   // -----------------------------
   const handleDownloadResume = async () => {
+    
   if (!tailoredResume) {
     return;
   }
@@ -353,35 +371,174 @@ const [resumeGenerationError, setResumeGenerationError] =
     );
   }
 };
+
+const handleDownloadCandidateProfileResume =
+  async () => {
+    try {
+      setResumeGenerationError("");
+      setGeneratingCandidateProfileResume(true);
+
+      const response = await fetch(
+        "/api/resume/pdf",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            mode: "candidate-profile",
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const data = await response
+          .json()
+          .catch(() => ({}));
+
+        throw new Error(
+          data.error ||
+            "Failed to generate candidate profile resume"
+        );
+      }
+
+      const blob = await response.blob();
+
+      const url =
+        window.URL.createObjectURL(blob);
+
+      const link =
+        document.createElement("a");
+
+      link.href = url;
+
+      link.download =
+        "Aviora-Candidate-Profile-Resume.pdf";
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      link.remove();
+
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(
+        "Candidate profile resume download error:",
+        error
+      );
+
+      setResumeGenerationError(
+        error instanceof Error
+          ? error.message
+          : "Failed to generate candidate profile resume"
+      );
+    } finally {
+      setGeneratingCandidateProfileResume(false);
+    }
+  };
+
+useEffect(() => {
+  async function loadApplications() {
+    try {
+      setApplicationsLoading(true);
+      setApplicationsError("");
+
+      const response = await fetch("/api/applications", {
+        method: "GET",
+        cache: "no-store",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Failed to load applications"
+        );
+      }
+
+      setApplications(data.applications || []);
+    } catch (error) {
+      console.error(
+        "Applications loading error:",
+        error
+      );
+
+      setApplicationsError(
+        error instanceof Error
+          ? error.message
+          : "Failed to load applications"
+      );
+    } finally {
+      setApplicationsLoading(false);
+    }
+  }
+
+  loadApplications();
+}, []);
+
+async function deleteApplication(applicationId: string) {
+
+  try {
+    const response = await fetch(
+      `/api/applications/${applicationId}`,
+      {
+        method: "DELETE",
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Failed to delete application"
+      );
+    }
+
+    setApplications((currentApplications) =>
+      currentApplications.filter(
+        (application) => application.id !== applicationId
+      )
+    );
+  } catch (error) {
+    console.error(
+      "Application deletion error:",
+      error
+    );
+
+    alert(
+      error instanceof Error
+        ? error.message
+        : "Failed to delete application"
+    );
+  }
+}
+
   return (
     <main className="min-h-screen bg-[#0a0a0a] text-white">
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur-xl">
-  <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-    {/* Aviora Logo */}
-    <Link
-      href="/"
-      className="text-xl font-semibold tracking-tight"
-    >
-      Aviora<span className="text-violet-400">.</span>
-    </Link>
-
-    {/* Tailor / Thali */}
-    <div className="flex items-center gap-4">
-      <AvioraModeNav />
-
-      
-    </div>
-  </div>
-</nav>
+      <AvioraNavbar />
 
       {/* Main */}
       <section className="mx-auto max-w-5xl px-6 py-20">
         {/* Hero */}
-        <div className="mb-12 text-center">
-          <p className="mb-4 text-sm font-medium uppercase tracking-[0.25em] text-violet-400">
-            AI Career Assistant
-          </p>
+       <div className="mb-12 text-center">
+
+  {/* Aviora Logo */}
+  <div className="mb-6 flex justify-center">
+    <Image
+      src="/aviora-logo.png"
+      alt="Aviora"
+      width={220}
+      height={165}
+      className="h-28 w-auto object-contain"
+      priority
+    />
+  </div>
+
+  <p className="mb-4 text-sm font-medium uppercase tracking-[0.25em] text-violet-400">
+    AI Career Assistant
+  </p>
 
           <h1 className="text-5xl font-semibold tracking-tight">
             Your resume.
@@ -399,214 +556,6 @@ const [resumeGenerationError, setResumeGenerationError] =
           </p>
         </div>
 
-        {/* -------------------------------- */}
-        {/* Resume Upload */}
-        {/* -------------------------------- */}
-
-        <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-8">
-          <div className="mb-6">
-            <h2 className="text-lg font-medium">
-              1. Upload your resume
-            </h2>
-
-            <p className="mt-1 text-sm text-gray-500">
-              Aviora will extract your education, skills,
-              projects, experience and other information.
-            </p>
-          </div>
-
-          <label className="group flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-white/20 px-6 py-12 transition hover:border-violet-400/50 hover:bg-white/[0.02]">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-violet-500/10 text-2xl">
-              📄
-            </div>
-
-            {resume ? (
-              <>
-                <p className="font-medium text-violet-300">
-                  {resume.name}
-                </p>
-
-                <p className="mt-2 text-sm text-gray-500">
-                  {(resume.size / 1024 / 1024).toFixed(2)} MB
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="font-medium">
-                  Drop your PDF here
-                </p>
-
-                <p className="mt-2 text-sm text-gray-500">
-                  or click to browse
-                </p>
-              </>
-            )}
-
-            <input
-              type="file"
-              accept=".pdf,application/pdf"
-              className="hidden"
-              onChange={handleResumeChange}
-            />
-          </label>
-        </div>
-
-        {/* Resume loading */}
-        {uploading && (
-          <div className="mb-6 rounded-xl border border-violet-500/20 bg-violet-500/5 p-5">
-            <p className="text-sm text-violet-300">
-              Extracting your resume and building your
-              profile...
-            </p>
-          </div>
-        )}
-
-        {/* Resume error */}
-        {error && (
-          <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/5 p-5">
-            <p className="text-sm text-red-400">
-              {error}
-            </p>
-          </div>
-        )}
-
-        {/* Extracted resume text */}
-        {resumeText && (
-          <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-8">
-            <div className="mb-5">
-              <h2 className="text-lg font-medium">
-                Resume extracted successfully
-              </h2>
-
-              <p className="mt-1 text-sm text-gray-500">
-                This is the raw text extracted from your PDF.
-              </p>
-            </div>
-
-            <pre className="max-h-[500px] overflow-auto whitespace-pre-wrap rounded-xl bg-black/40 p-5 text-sm leading-6 text-gray-300">
-              {resumeText}
-            </pre>
-          </div>
-        )}
-
-        {/* -------------------------------- */}
-        {/* Candidate Profile */}
-        {/* -------------------------------- */}
-
-        {profile && (
-          <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-8">
-            <div className="mb-6">
-              <h2 className="text-lg font-medium">
-                Candidate profile
-              </h2>
-
-              <p className="mt-1 text-sm text-gray-500">
-                Aviora's structured understanding of your
-                resume.
-              </p>
-            </div>
-
-            <div className="grid gap-6 sm:grid-cols-2">
-              <div>
-                <p className="text-xs uppercase tracking-wider text-gray-500">
-                  Name
-                </p>
-
-                <p className="mt-2 text-sm text-gray-200">
-                  {profile.personal?.name ||
-                    "Not available"}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-xs uppercase tracking-wider text-gray-500">
-                  Location
-                </p>
-
-                <p className="mt-2 text-sm text-gray-200">
-                  {profile.personal?.location ||
-                    "Not available"}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-xs uppercase tracking-wider text-gray-500">
-                  Email
-                </p>
-
-                <p className="mt-2 text-sm text-gray-200">
-                  {profile.personal?.email ||
-                    "Not available"}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-xs uppercase tracking-wider text-gray-500">
-                  Phone
-                </p>
-
-                <p className="mt-2 text-sm text-gray-200">
-                  {profile.personal?.phone ||
-                    "Not available"}
-                </p>
-              </div>
-            </div>
-
-            {profile.summary && (
-              <div className="mt-6">
-                <p className="text-xs uppercase tracking-wider text-gray-500">
-                  Summary
-                </p>
-
-                <p className="mt-2 text-sm leading-6 text-gray-400">
-                  {profile.summary}
-                </p>
-              </div>
-            )}
-
-            {profile.skills?.length > 0 && (
-              <div className="mt-6">
-                <p className="mb-3 text-xs uppercase tracking-wider text-gray-500">
-                  Skills
-                </p>
-
-                <div className="space-y-4">
-                  {profile.skills.map(
-                    (
-                      category: {
-                        category: string;
-                        skills: string[];
-                      },
-                      index: number
-                    ) => (
-                      <div key={index}>
-                        <p className="mb-2 text-sm text-gray-400">
-                          {category.category}
-                        </p>
-
-                        <div className="flex flex-wrap gap-2">
-                          {category.skills.map(
-                            (
-                              skill: string,
-                              skillIndex: number
-                            ) => (
-                              <span
-                                key={skillIndex}
-                                className="rounded-full bg-white/10 px-3 py-1 text-xs text-gray-300"
-                              >
-                                {skill}
-                              </span>
-                            )
-                          )}
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* -------------------------------- */}
         {/* Job URL */}
@@ -614,13 +563,13 @@ const [resumeGenerationError, setResumeGenerationError] =
 
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8">
           <div className="mb-6">
-            <h2 className="text-lg font-medium">
-              2. Add a job posting
-            </h2>
+           <h2 className="text-lg font-medium">
+  Scan a Job
+</h2>
 
-            <p className="mt-1 text-sm text-gray-500">
-              Paste the URL of the job you want to apply for.
-            </p>
+<p className="mt-1 text-sm text-gray-500">
+  Paste a job posting URL and Aviora will analyze the role and match it against your profile.
+</p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
@@ -1543,56 +1492,341 @@ const [resumeGenerationError, setResumeGenerationError] =
           </div>
         )}
 
-        {/* -------------------------------- */}
-        {/* Recent Applications */}
-        {/* -------------------------------- */}
+{/* -------------------------------- */}
+{/* Career Actions */}
+{/* -------------------------------- */}
 
-        <div className="mt-16">
-          <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-lg font-medium">
-              Recent Applications
-            </h2>
+<div className="mt-16">
 
-            <button className="text-sm text-gray-500 transition hover:text-white">
-              View all
-            </button>
-          </div>
+  {/* Generate Candidate Profile Resume */}
+  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
+    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-500/10 text-violet-300">
+      <span className="text-lg">✦</span>
+    </div>
 
-          <div className="overflow-hidden rounded-2xl border border-white/10">
-            <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
-              <div>
-                <p className="font-medium">
-                  Frontend Developer
+    <h2 className="mt-5 text-lg font-medium">
+      Candidate Profile Resume
+    </h2>
+
+    <p className="mt-2 max-w-md text-sm leading-6 text-gray-500">
+      Generate a professional resume using the information
+      already stored in your Aviora candidate profile.
+    </p>
+
+    <button
+      type="button"
+      
+      onClick={handleDownloadCandidateProfileResume}
+  disabled={generatingCandidateProfileResume}
+  className="rounded-xl bg-white px-5 py-3 text-sm font-medium text-black transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+>
+  {generatingCandidateProfileResume
+    ? "Generating..."
+    : "Generate Resume"}
+    </button>
+  </div>
+
+  
+</div>
+{/* -------------------------------- */}
+{/* Update Profile */}
+{/* -------------------------------- */}
+
+<div className="mt-16 rounded-2xl border border-white/10 bg-white/[0.03] p-8">
+
+  <div className="mb-6">
+    <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-violet-400">
+      Candidate Profile
+    </p>
+
+    <h2 className="text-xl font-semibold">
+      Update Your Profile
+    </h2>
+
+    <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">
+      Upload a new resume to replace your current candidate profile.
+      Aviora will extract your skills, experience, education, projects
+      and other information from the new resume.
+    </p>
+  </div>
+
+  <label className="group flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-white/20 px-6 py-12 transition hover:border-violet-400/50 hover:bg-white/[0.02]">
+
+    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-violet-500/10 text-2xl">
+      📄
+    </div>
+
+    {resume ? (
+      <>
+        <p className="font-medium text-violet-300">
+          {resume.name}
+        </p>
+
+        <p className="mt-2 text-sm text-gray-500">
+          {(resume.size / 1024 / 1024).toFixed(2)} MB
+        </p>
+
+        <p className="mt-3 text-xs text-gray-600">
+          Click to choose a different resume
+        </p>
+      </>
+    ) : (
+      <>
+        <p className="font-medium">
+          Upload a new resume
+        </p>
+
+        <p className="mt-2 text-sm text-gray-500">
+          PDF only · Click to browse
+        </p>
+      </>
+    )}
+
+    <input
+      type="file"
+      accept=".pdf,application/pdf"
+      className="hidden"
+      onChange={handleResumeChange}
+    />
+
+  </label>
+
+  {uploading && (
+    <div className="mt-5 rounded-xl border border-violet-500/20 bg-violet-500/5 p-5">
+      <p className="text-sm text-violet-300">
+        Updating your profile...
+      </p>
+
+      <p className="mt-1 text-xs text-gray-500">
+        Aviora is extracting your resume and rebuilding your candidate profile.
+      </p>
+    </div>
+  )}
+
+  {error && (
+    <div className="mt-5 rounded-xl border border-red-500/20 bg-red-500/5 p-5">
+      <p className="text-sm text-red-400">
+        {error}
+      </p>
+    </div>
+  )}
+
+</div>
+{/* -------------------------------- */}
+{/* Recent Applications List */}
+{/* -------------------------------- */}
+
+<div
+  id="recent-applications"
+  className="mt-10"
+>
+  <div className="mb-5 flex items-center justify-between">
+    <div>
+      <h2 className="text-lg font-medium">
+        Recent Applications
+      </h2>
+
+      <p className="mt-1 text-sm text-gray-500">
+        Your jobs marked as Applied in Thali.
+      </p>
+    </div>
+
+    {applications.length > 3 && (
+      <button
+        type="button"
+        onClick={() =>
+          setShowAllApplications(
+            (current) => !current
+          )
+        }
+        className="text-sm text-gray-400 transition hover:text-white"
+      >
+        {showAllApplications
+          ? "Show less"
+          : "View all"}
+      </button>
+    )}
+  </div>
+
+  {applicationsLoading && (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8">
+      <p className="text-sm text-gray-500">
+        Loading your applications...
+      </p>
+    </div>
+  )}
+
+  {!applicationsLoading && applicationsError && (
+    <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6">
+      <p className="text-sm text-red-400">
+        {applicationsError}
+      </p>
+    </div>
+  )}
+
+  {!applicationsLoading &&
+    !applicationsError &&
+    applications.length === 0 && (
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center">
+        <p className="text-sm text-gray-400">
+          No applications yet.
+        </p>
+
+        <p className="mt-2 text-xs text-gray-600">
+          Jobs you mark as Applied in Thali will appear here.
+        </p>
+      </div>
+    )}
+
+  {!applicationsLoading &&
+    !applicationsError &&
+    applications.length > 0 && (
+      <div className="overflow-hidden rounded-2xl border border-white/10">
+        {(showAllApplications
+          ? applications
+          : applications.slice(0, 3)
+        ).map((application) => {
+          const job = application.job;
+
+          return (
+            <div
+              key={application.id}
+              className="flex flex-col gap-5 border-b border-white/10 px-6 py-6 last:border-b-0 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div className="min-w-0">
+                <div className="flex items-center gap-3">
+                  <h3 className="truncate font-medium text-white">
+                    {job?.title ||
+                      "Untitled position"}
+                  </h3>
+
+                  <span className="shrink-0 rounded-full bg-green-500/10 px-2.5 py-1 text-[11px] font-medium text-green-400">
+                    Applied
+                  </span>
+                </div>
+
+                <p className="mt-2 text-sm text-gray-400">
+                  {job?.company ||
+                    "Company not specified"}
+
+                  {job?.location && (
+                    <>
+                      <span className="mx-2 text-gray-700">
+                        •
+                      </span>
+
+                      {job.location}
+                    </>
+                  )}
                 </p>
 
-                <p className="mt-1 text-sm text-gray-500">
-                  Example Company
-                </p>
+                {application.appliedAt && (
+                  <p className="mt-2 text-xs text-gray-600">
+                    Applied{" "}
+                    {new Date(
+                      application.appliedAt
+                    ).toLocaleDateString(
+                      undefined,
+                      {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      }
+                    )}
+                  </p>
+                )}
               </div>
 
-              <span className="rounded-full bg-green-500/10 px-3 py-1 text-xs text-green-400">
-                Resume Ready
-              </span>
+              <div className="flex shrink-0 items-center gap-2">
+  {job?.url && (
+    <a
+      href={job.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="rounded-xl border border-white/10 px-4 py-2.5 text-sm transition hover:bg-white/5"
+    >
+      View Job ↗
+    </a>
+  )}
+
+  <button
+    type="button"
+    onClick={() =>
+  setApplicationToDelete(application)
+}
+    aria-label="Remove application"
+    title="Remove application"
+    className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-gray-500 transition hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400"
+  >
+    🗑
+  </button>
+</div>
             </div>
-
-            <div className="flex items-center justify-between px-6 py-5">
-              <div>
-                <p className="font-medium">
-                  Software Developer
-                </p>
-
-                <p className="mt-1 text-sm text-gray-500">
-                  Example Company
-                </p>
-              </div>
-
-              <span className="rounded-full bg-yellow-500/10 px-3 py-1 text-xs text-yellow-400">
-                Analyzed
-              </span>
-            </div>
-          </div>
-        </div>
+          );
+        })}
+      </div>
+    )}
+</div>
       </section>
+      {applicationToDelete && (
+  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
+    <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#111111] p-6 shadow-2xl">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-gray-500">
+            Application
+          </p>
+
+          <h3 className="mt-2 text-xl font-medium text-white">
+            Remove application?
+          </h3>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setApplicationToDelete(null)}
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition hover:bg-white/5 hover:text-white"
+        >
+          ×
+        </button>
+      </div>
+
+      <p className="mt-4 text-sm leading-6 text-gray-400">
+        Are you sure you want to remove{" "}
+        <span className="font-medium text-white">
+          {applicationToDelete.job?.title ||
+            "this application"}
+        </span>{" "}
+        from your recent applications?
+      </p>
+
+      <div className="mt-6 flex justify-end gap-3">
+        <button
+          type="button"
+          onClick={() => setApplicationToDelete(null)}
+          disabled={deletingApplication}
+          className="rounded-xl border border-white/10 px-4 py-2.5 text-sm text-gray-400 transition hover:bg-white/5 hover:text-white disabled:opacity-50"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            deleteApplication(applicationToDelete.id)
+          }
+          disabled={deletingApplication}
+          className="rounded-xl bg-red-500/10 px-4 py-2.5 text-sm text-red-400 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {deletingApplication
+            ? "Removing..."
+            : "Remove"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </main>
   );
 }
