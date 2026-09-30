@@ -738,11 +738,22 @@ console.log(
   const executablePath =
   await getChromiumExecutablePath();
 
+const isVercel =
+  process.env.VERCEL === "1";
+
 const browser = await puppeteer.launch({
-  args:
-    process.platform === "win32"
-      ? []
-      : [...chromium.args],
+  args: isVercel
+    ? [
+        ...chromium.args,
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--no-first-run",
+        "--no-zygote",
+        "--single-process",
+      ]
+    : [],
 
   defaultViewport: {
     width: 1440,
