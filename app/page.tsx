@@ -190,10 +190,80 @@ export default async function Home() {
 
 
             {/* Main visual */}
-            <div className="relative mx-auto flex h-[440px] max-w-3xl items-center justify-center sm:h-[500px]">
+<div className="relative mx-auto flex h-[440px] max-w-3xl items-center justify-center sm:h-[500px]">
 
-              {/* Center */}
-              <div
+  {/* ========================================================= */}
+{/* ULTRA DARK CHARCOAL INTELLIGENCE GLOW */}
+{/* ========================================================= */}
+
+{/* Deep charcoal atmosphere */}
+<div
+  className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[340px] w-[340px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[50px]"
+  style={{
+    background: `radial-gradient(
+      circle,
+      rgba(5, 5, 5, 0.58) 0%,
+      rgba(10, 10, 10, 0.42) 30%,
+      rgba(18, 18, 18, 0.20) 52%,
+      transparent 72%
+    )`,
+  }}
+/>
+
+{/* Ultra dark rays */}
+<div
+  className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[410px] w-[410px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-80 blur-[14px] animate-[spin_32s_linear_infinite]"
+  style={{
+    background: `conic-gradient(
+      from 0deg,
+      transparent 0deg 14deg,
+      rgba(0, 0, 0, 0.38) 16deg 19deg,
+      transparent 21deg 42deg,
+
+      rgba(8, 8, 8, 0.30) 44deg 48deg,
+      transparent 50deg 76deg,
+
+      rgba(0, 0, 0, 0.34) 78deg 82deg,
+      transparent 84deg 110deg,
+
+      rgba(12, 12, 12, 0.28) 112deg 116deg,
+      transparent 118deg 146deg,
+
+      rgba(0, 0, 0, 0.38) 148deg 153deg,
+      transparent 155deg 181deg,
+
+      rgba(8, 8, 8, 0.30) 183deg 188deg,
+      transparent 190deg 220deg,
+
+      rgba(0, 0, 0, 0.34) 222deg 227deg,
+      transparent 229deg 254deg,
+
+      rgba(12, 12, 12, 0.28) 256deg 260deg,
+      transparent 262deg 292deg,
+
+      rgba(0, 0, 0, 0.34) 294deg 299deg,
+      transparent 301deg 327deg,
+
+      rgba(8, 8, 8, 0.30) 329deg 334deg,
+      transparent 336deg 360deg
+    )`,
+  }}
+/>
+
+{/* Strong dark inner glow */}
+<div
+  className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[220px] w-[220px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[35px]"
+  style={{
+    background: `radial-gradient(
+      circle,
+      rgba(0, 0, 0, 0.45) 0%,
+      rgba(8, 8, 8, 0.25) 45%,
+      transparent 72%
+    )`,
+  }}
+/>
+  {/* Center */}
+  <div
                 className="relative z-20 flex h-36 w-36 flex-col items-center justify-center rounded-full border bg-white shadow-[0_25px_80px_rgba(0,0,0,0.12)] sm:h-44 sm:w-44"
                 style={{ borderColor: `${gold}66` }}
               >
@@ -602,6 +672,398 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* ========================================================= */}
+{/* TECHNOLOGY STACK */}
+{/* ========================================================= */}
+
+<section className="relative overflow-hidden border-y border-black/[0.06] bg-[#fbfbf8] px-5 py-24 sm:px-8 lg:py-32">
+  {/* Background grid */}
+  <div
+    className="pointer-events-none absolute inset-0 opacity-[0.35]"
+    style={{
+      backgroundImage:
+        "linear-gradient(rgba(0,0,0,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.035) 1px, transparent 1px)",
+      backgroundSize: "48px 48px",
+    }}
+  />
+
+  {/* Decorative glow */}
+  <div
+    className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
+    style={{ backgroundColor: `${gold}08` }}
+  />
+
+  <div className="relative mx-auto max-w-7xl">
+    {/* Header */}
+    <div className="mx-auto max-w-3xl text-center">
+      <p
+        className="text-xs font-semibold tracking-[0.2em]"
+        style={{ color: gold }}
+      >
+        POWERED BY
+      </p>
+
+      <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] sm:text-6xl">
+        Modern technology.
+        <br />
+        Built for career intelligence.
+      </h2>
+
+      <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-neutral-500 sm:text-lg">
+        Aviora brings together a modern application stack, AI intelligence,
+        data infrastructure and automation to turn your career profile into
+        actionable opportunities.
+      </p>
+    </div>
+
+    {/* Architecture visual */}
+    <div className="relative mx-auto mt-20 max-w-6xl">
+      {/* Desktop connection lines */}
+      <div className="pointer-events-none absolute inset-0 hidden lg:block">
+        {/* Horizontal lines */}
+        <div
+          className="absolute left-[25%] top-[27%] h-px w-[50%]"
+          style={{
+            background: `linear-gradient(90deg, transparent, ${gold}55, transparent)`,
+          }}
+        />
+
+        <div
+          className="absolute left-[25%] top-[73%] h-px w-[50%]"
+          style={{
+            background: `linear-gradient(90deg, transparent, ${gold}55, transparent)`,
+          }}
+        />
+
+        {/* Vertical lines */}
+        <div
+          className="absolute left-1/2 top-[27%] h-[46%] w-px"
+          style={{
+            background: `linear-gradient(180deg, ${gold}55, ${gold}15, ${gold}55)`,
+          }}
+        />
+
+        {/* Connection nodes */}
+        <span
+          className="absolute left-[25%] top-[27%] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{ backgroundColor: gold }}
+        />
+
+        <span
+          className="absolute left-[75%] top-[27%] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{ backgroundColor: gold }}
+        />
+
+        <span
+          className="absolute left-[25%] top-[73%] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{ backgroundColor: gold }}
+        />
+
+        <span
+          className="absolute left-[75%] top-[73%] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{ backgroundColor: gold }}
+        />
+      </div>
+
+      {/* Top technology cards */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Frontend */}
+        <div className="group relative rounded-[2rem] border border-black/[0.07] bg-white p-7 shadow-[0_20px_60px_rgba(0,0,0,0.04)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_25px_70px_rgba(0,0,0,0.08)]">
+          <div
+            className="absolute left-7 top-0 h-px w-20"
+            style={{ backgroundColor: gold }}
+          />
+
+          <div className="flex items-center justify-between">
+            <div
+              className="flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold"
+              style={{
+                backgroundColor: `${gold}12`,
+                color: "#8a6a10",
+              }}
+            >
+              UI
+            </div>
+
+            <span className="text-[10px] font-semibold tracking-[0.18em] text-neutral-400">
+              LAYER 01
+            </span>
+          </div>
+
+          <h3 className="mt-7 text-xl font-semibold tracking-[-0.03em]">
+            Frontend
+          </h3>
+
+          <p className="mt-2 text-sm leading-6 text-neutral-500">
+            Fast, responsive interfaces designed around the career workflow.
+          </p>
+
+          <div className="mt-6 flex flex-wrap gap-2">
+            {["Next.js 16", "React 19", "TypeScript", "Tailwind CSS"].map(
+              (item) => (
+                <span
+                  key={item}
+                  className="rounded-full border border-black/[0.07] bg-[#fbfbf8] px-3 py-1.5 text-xs font-medium text-neutral-600"
+                >
+                  {item}
+                </span>
+              )
+            )}
+          </div>
+        </div>
+
+        {/* Intelligence */}
+        <div className="group relative rounded-[2rem] border border-black/[0.08] bg-[#0a0a0a] p-7 text-white shadow-[0_25px_80px_rgba(0,0,0,0.12)] transition-all duration-500 hover:-translate-y-1">
+          {/* Glow */}
+          <div
+            className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full blur-3xl"
+            style={{ backgroundColor: `${gold}18` }}
+          />
+
+          <div className="relative flex items-center justify-between">
+            <div
+              className="flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold"
+              style={{
+                backgroundColor: `${gold}18`,
+                color: gold,
+              }}
+            >
+              AI
+            </div>
+
+            <span className="text-[10px] font-semibold tracking-[0.18em] text-white/35">
+              CORE
+            </span>
+          </div>
+
+          <h3 className="relative mt-7 text-xl font-semibold tracking-[-0.03em]">
+            Intelligence
+          </h3>
+
+          <p className="relative mt-2 text-sm leading-6 text-white/50">
+            AI that understands resumes, jobs, skills and career context.
+          </p>
+
+          <div className="relative mt-6 flex flex-wrap gap-2">
+            {[
+              "OpenAI",
+              "Resume AI",
+              "Job Analysis",
+              "AI Matching",
+            ].map((item) => (
+              <span
+                key={item}
+                className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-medium text-white/65"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Backend */}
+        <div className="group relative rounded-[2rem] border border-black/[0.07] bg-white p-7 shadow-[0_20px_60px_rgba(0,0,0,0.04)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_25px_70px_rgba(0,0,0,0.08)]">
+          <div
+            className="absolute left-7 top-0 h-px w-20"
+            style={{ backgroundColor: gold }}
+          />
+
+          <div className="flex items-center justify-between">
+            <div
+              className="flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold"
+              style={{
+                backgroundColor: `${gold}12`,
+                color: "#8a6a10",
+              }}
+            >
+              API
+            </div>
+
+            <span className="text-[10px] font-semibold tracking-[0.18em] text-neutral-400">
+              LAYER 02
+            </span>
+          </div>
+
+          <h3 className="mt-7 text-xl font-semibold tracking-[-0.03em]">
+            Backend
+          </h3>
+
+          <p className="mt-2 text-sm leading-6 text-neutral-500">
+            Secure services and structured data powering every interaction.
+          </p>
+
+          <div className="mt-6 flex flex-wrap gap-2">
+            {["Node.js", "Prisma 7", "PostgreSQL", "Auth.js"].map((item) => (
+              <span
+                key={item}
+                className="rounded-full border border-black/[0.07] bg-[#fbfbf8] px-3 py-1.5 text-xs font-medium text-neutral-600"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Central Aviora node */}
+      <div className="relative z-10 mx-auto my-10 flex max-w-md flex-col items-center">
+        {/* Connecting line */}
+        <div
+          className="mb-[-1px] h-10 w-px lg:hidden"
+          style={{ backgroundColor: `${gold}55` }}
+        />
+
+        <div
+          className="relative flex h-28 w-28 items-center justify-center rounded-full border bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)]"
+          style={{ borderColor: `${gold}55` }}
+        >
+          {/* Outer ring */}
+          <div
+            className="absolute inset-2 rounded-full border border-dashed"
+            style={{ borderColor: `${gold}55` }}
+          />
+
+          {/* Logo */}
+          <div className="relative flex flex-col items-center">
+            <div
+              className="text-2xl font-semibold tracking-[-0.08em]"
+              style={{ color: gold }}
+            >
+              A
+            </div>
+
+            <span className="mt-0.5 text-[7px] font-semibold tracking-[0.25em] text-neutral-400">
+              AVIORA
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-5 text-center">
+          <p className="text-xs font-semibold tracking-[0.18em] text-neutral-400">
+            AVIORA ENGINE
+          </p>
+
+          <p className="mt-2 text-sm text-neutral-500">
+            Profile → Understand → Match → Act
+          </p>
+        </div>
+      </div>
+
+      {/* Bottom cards */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Data */}
+        <div className="group relative rounded-[2rem] border border-black/[0.07] bg-white p-7 shadow-[0_20px_60px_rgba(0,0,0,0.04)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_25px_70px_rgba(0,0,0,0.08)]">
+          <div
+            className="absolute left-7 top-0 h-px w-20"
+            style={{ backgroundColor: gold }}
+          />
+
+          <div className="flex items-center justify-between">
+            <div
+              className="flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold"
+              style={{
+                backgroundColor: `${gold}12`,
+                color: "#8a6a10",
+              }}
+            >
+              DB
+            </div>
+
+            <span className="text-[10px] font-semibold tracking-[0.18em] text-neutral-400">
+              DATA
+            </span>
+          </div>
+
+          <h3 className="mt-7 text-xl font-semibold tracking-[-0.03em]">
+            Structured Career Data
+          </h3>
+
+          <p className="mt-2 text-sm leading-6 text-neutral-500">
+            Candidate profiles, applications and job intelligence stored in a
+            structured data layer.
+          </p>
+
+          <div className="mt-6 flex flex-wrap gap-2">
+            {["PostgreSQL", "Prisma", "Candidate Profiles", "Job Data"].map(
+              (item) => (
+                <span
+                  key={item}
+                  className="rounded-full border border-black/[0.07] bg-[#fbfbf8] px-3 py-1.5 text-xs font-medium text-neutral-600"
+                >
+                  {item}
+                </span>
+              )
+            )}
+          </div>
+        </div>
+
+        {/* Infrastructure */}
+        <div className="group relative rounded-[2rem] border border-black/[0.07] bg-white p-7 shadow-[0_20px_60px_rgba(0,0,0,0.04)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_25px_70px_rgba(0,0,0,0.08)]">
+          <div
+            className="absolute left-7 top-0 h-px w-20"
+            style={{ backgroundColor: gold }}
+          />
+
+          <div className="flex items-center justify-between">
+            <div
+              className="flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold"
+              style={{
+                backgroundColor: `${gold}12`,
+                color: "#8a6a10",
+              }}
+            >
+              ∞
+            </div>
+
+            <span className="text-[10px] font-semibold tracking-[0.18em] text-neutral-400">
+              INFRA
+            </span>
+          </div>
+
+          <h3 className="mt-7 text-xl font-semibold tracking-[-0.03em]">
+            Infrastructure
+          </h3>
+
+          <p className="mt-2 text-sm leading-6 text-neutral-500">
+            Deployment, authentication and intelligent web automation working
+            behind the scenes.
+          </p>
+
+          <div className="mt-6 flex flex-wrap gap-2">
+            {["Vercel", "GitHub", "Auth.js", "Puppeteer", "Naukri"].map(
+              (item) => (
+                <span
+                  key={item}
+                  className="rounded-full border border-black/[0.07] bg-[#fbfbf8] px-3 py-1.5 text-xs font-medium text-neutral-600"
+                >
+                  {item}
+                </span>
+              )
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Bottom statement */}
+    <div className="mx-auto mt-16 flex max-w-3xl items-center justify-center gap-3 text-center">
+      <span
+        className="h-px w-10"
+        style={{ backgroundColor: `${gold}55` }}
+      />
+
+      <p className="text-xs font-medium tracking-[0.12em] text-neutral-400">
+        ONE INTELLIGENT SYSTEM. YOUR ENTIRE CAREER WORKFLOW.
+      </p>
+
+      <span
+        className="h-px w-10"
+        style={{ backgroundColor: `${gold}55` }}
+      />
+    </div>
+  </div>
+</section>
 
 
       {/* ========================================================= */}
